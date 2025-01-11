@@ -7,13 +7,7 @@ from random import shuffle
 
 # Third party libraries
 from flask import Flask, redirect, request, url_for, render_template
-from flask_login import (
-    LoginManager,
-    current_user,
-    login_required,
-    login_user,
-    logout_user,
-)
+
 
 import requests
 
@@ -27,16 +21,6 @@ year = year[2:]
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
 
-# User session management setup
-# https://flask-login.readthedocs.io/en/latest
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-
-@login_manager.unauthorized_handler
-def unauthorized():
-    return "You must be logged in to access this content.", 403
-
 
 # Naive database setup
 try:
@@ -46,42 +30,24 @@ except sqlite3.OperationalError:
     pass
 
 
-
-# Flask-Login helper to retrieve a user from our db
-@login_manager.user_loader
-def load_user(user_id):
-    return User.get(user_id)
-
-
-@app.route("/")
-def index():
-    if current_user.is_authenticated:
-        return render_template("index.html")
-    else:
-        return render_template("login.html")
-    
-
-
-
- 
 @app.route("/login")
-def login():
+def login(username, password):
     
-    return {}
+    connection = sqlite3.connect("sqlite_db")
+    cursor = connection.cursor()
+    cursor.execute("SELECT Name,Password,Isadmin FROM User WHERE Name={}".format(username))
+    user = cursor.fetchone()
+
+    cursor.fetchall() #clear the cursor
+    
+    
+    return {"Username":user[0], "Password":user[1], "Isasmin":user[2]}
+    
 
 
 
-@app.route("/logout")
-def logout():
-    
-   
-    if current_user.is_authenticated:
-        logout_user()
-        print("Logout")
-    
-    
-    
-    return {}
+
+
 
 
 
