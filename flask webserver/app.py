@@ -83,7 +83,7 @@ def register():
     return {'message': 'User registered successfully'}, 201
 
 
-
+#Login Path
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -103,7 +103,7 @@ def login():
         return {'error': 'Invalid credentials'}, 401
 
 
-
+#Logout Path
 @app.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
