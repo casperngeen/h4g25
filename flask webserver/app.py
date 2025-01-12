@@ -57,7 +57,9 @@ def register():
     data = request.json
     username = data.get('username')
     password = data.get('password')
-    isadmin = int(data.get('isadmin'))
+    mobile = data.get('mobile')
+    isadmin = int(data.get('isadmin')) #1 for admin, 0 for normal user
+    status = 1 #1 for active, 0 for suspended
 
     if not username or not password or not isadmin:
         return {'error': 'Username, password or isadmin is required'}, 400
@@ -66,15 +68,15 @@ def register():
     conn = get_db_connection()
     
     #Check if user exists
-    existing_user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+    existing_user = conn.execute('SELECT * FROM User WHERE username = ?', (username,)).fetchone()
     if existing_user:
         return {'error': 'User already exists'}, 400
 
 
     #Register User
     conn.execute(
-        'INSERT INTO users (username, password, isadmin) VALUES (?, ?, ?)',
-        (username, password, isadmin)
+        'INSERT INTO User (username, password, mobile, isadmin, status) VALUES (?, ?, ?, ?, ?)',
+        (username, password, mobile, isadmin, status)
     )
     conn.commit()
     conn.close()
@@ -83,7 +85,7 @@ def register():
     return {'message': 'User registered successfully'}, 201
 
 
-
+#Login Path
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -92,18 +94,22 @@ def login():
 
     #Retreive User
     conn = get_db_connection()
-    user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+    user = conn.execute('SELECT * FROM User WHERE username = ?', (username,)).fetchone()
     conn.close()
     
     #Validate User
     if user and user['password'] == password:
-        access_token = create_access_token(identity=username)
-        return {'access_token': access_token, 'isadmin': user['isadmin']}, 200
+        #Check if account is active
+        if user['status'] == 1:
+            access_token = create_access_token(identity=username)
+            return {'access_token': access_token, 'isadmin': user['isadmin']}, 200
+        else:
+            return {'error': 'Account Suspeneded'}, 401
     else:
         return {'error': 'Invalid credentials'}, 401
 
 
-
+#Logout Path
 @app.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
