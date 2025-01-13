@@ -1,13 +1,14 @@
 Residents
     SMS password rest: https://www.sendsmsnow.com/
-    View voucher balance (how much money)
-    view transaction history
-    view available products
-    request items
+    [done] View voucher balance (how much many vouchers, something like cdc system where it is all whole number)
+    [done] view transaction history
+    [done] view available products 
+    request items 
     preorder system
+    pay wth voucher
 
 Admin
-    User management (Add, suspend and change password)
+    User management ([done] Add, suspend and change password)
     Approve/reject tasks
     Product request with tracking
     view and update of audit logs
