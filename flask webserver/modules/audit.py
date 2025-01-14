@@ -19,7 +19,7 @@ class Audit:
         """
         
         #Get db connection
-        conn = sqlite3.connect("../sqlite_db") #Path based on the root folder
+        conn = sqlite3.connect("../sqlite_db.db") #Path based on the root folder
         
         #Add the log in
         try:

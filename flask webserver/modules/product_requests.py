@@ -14,7 +14,7 @@ class Product_Requests:
         """
         
         #Get connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Get Requests
         product_requests = conn.execute("SELECT * FROM Product_Requests").fetchall()
@@ -35,7 +35,7 @@ class Product_Requests:
         """
         
         #Get connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Get Requests
         product_request = conn.execute("SELECT * FROM Product_Requests WHERE Requestid = ?", (requestid,)).fetchone()
@@ -60,7 +60,7 @@ class Product_Requests:
             dict: Status of creation, error message if there is.
         """
         #Get connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Create request
         try:
@@ -90,7 +90,7 @@ class Product_Requests:
             dict: Status of creation, error message if there is.
         """
         #Get connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Update request status
         try:

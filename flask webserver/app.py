@@ -35,11 +35,6 @@ def check_if_token_in_blacklist(jwt_header, jwt_payload):
     return jwt_payload['jti'] in blacklist
 
 
-#Helper function to get db connection
-def get_db_connection():
-    conn = sqlite3.connect("sqlite_db")
-    return conn
-
 #---------------------------------------------------------------------------------------------------------------------------
 #User management stuff
 
@@ -289,11 +284,11 @@ def request_product():
     #Log this event
     log = modules.Audit.record_log(userid, f"Request product {productid} of quantity {quantity}")
     
-    return {"Message": "Product request successfully updated, please await approval"}, 200
+    return {"Message": "Product request successfully created, please await approval"}, 200
     
 
 
-#Admin approve/reject request
+#Admin approve/reject product request
 @app.route("/update_product_request")
 @jwt_required
 def update_product_request():
@@ -375,6 +370,158 @@ def update_product_request():
 
 
 
+#-----------------------------------------------------------------------------------------------------------------
+
+#Preorder System
+
+@app.route("/view_preorders")
+@jwt_required
+def view_preorders():
+    #Get user id
+    data = request.json
+    username = data["Username"]
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Check if user is an admin
+    if not modules.User.isadmin(userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    preorders = modules.Preorders.get_preorders()["Preorders"]
+    if not preorders:
+        return {"Error": "Cannot find preorders"}, 400
+    
+    #Add more fields 
+    for preorder in preorders:
+        #Add Username
+        username = modules.User.get_user(preorder["Userid"])["Name"]
+        preorder["Username"] = username
+        
+        #Add Productname
+        product = modules.Products.get_product(preorder["Productid"])
+        preorder["Productname"] = product["Name"]
+        
+        #Change voucherids into voucher values
+        voucherids = preorder["Vouchers"].strip().split(",")
+        preorder["Vouchers"] = ",".join([modules.Vouchers.check_value(voucherid)["Amount"] for voucherid in voucherids])
+       
+        #Add Current Quantity
+        preorder["Available_Quantity"] = product["Quantity"]
+        
+    #Returns all product requests with fields: Requestid, Userid, Username, Productid, Productname, Quantity, Available_Quantity, Status, Created
+    return {"Preorders": preorders}, 200
+    
+
+
+#Preorder
+@app.route("/preorder", methods=["POST"])
+@jwt_required
+def preorder():
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    productid = data["Productid"]
+    quantity = data["Quantity"]
+    amount = data["Amount"] #Total amount to pay
+    vouchers = data["Vouchers"] #Voucherids of vouchers to be used in csv format
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+
+    
+    #Update preorder requests table
+    preorder_status = modules.Preorders.create_preorder(userid, productid, quantity, amount, vouchers, "pending")
+    if not preorder_status["Status"]:
+        return {"Error": "Failed to create preorder"}, 400
+
+    #Log this event
+    log = modules.Audit.record_log(userid, f"Preorder of product {productid} of quantity {quantity}")
+    
+    return {"Message": "Preorder successfully created, please await approval"}, 200
+
+
+
+#Admin approve/reject preorder
+@app.route("/update_preorder")
+@jwt_required
+def update_preorder():
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    preorderid = data["Preorderid"]
+    action = data["Action"] #Should be 'approved'/'rejected'
+    
+    #Get userid
+    admin_userid = modules.User.get_userid(username)["Userid"]
+    
+    #Confirm that user performing action is an admin
+    if not modules.User.isadmin(admin_userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    #Get userid of the user of the request
+    userid = modules.Preorders.get_preorder(preorderid)["Userid"]
+    
+    #Update the request status in the Product_Requests Table
+    update_status = modules.Preorders.update_preorder_status(preorderid, action)
+    if not update_status["Status"]:
+        return {"Error": "Failed to update request"}, 400
+    
+    #Log this update
+    log = modules.Audit.record_log(admin_userid, f"Preorder {preorderid}: {action}")
+    
+    
+    #Update various tables if approved, else no need care
+    if action == "approved":
+        #Retrieve needed fields from db
+        preorder = modules.Preorders.get_preorder(preorderid)["Preorder"]
+        productid = preorder["Productid"]
+        quantity = preorder["Quantity"]
+        vouchers = preorder["Vouchers"]
+        
+
+        #Update inventory (Stock in Products Table)
+        #First get current stock
+        product = modules.Products.get_product(productid)["Product"]
+        if not product:
+            return {"Error": "Failed to find product"}, 400
+        
+        #Calculate stock left
+        stock_left = product["Stock"] - quantity
+        
+        #Update stock left
+        update_stock_status = modules.Products.update_product(productid, product["Name"], stock_left, product["Price"])
+        if not update_stock_status["Status"]:
+            return {"Error": "Failed to update stock"}, 400
+        
+        #Log this update
+        log = modules.Audit.record_log(admin_userid, f"Product {productid} updated")
+        
+        
+        #Update Transactions (New record in Transaction Table)
+        amount = product["Price"] * quantity
+        transaction_status = modules.Transactions.record_transaction(userid, amount, "Deduct", vouchers)
+        if not transaction_status["Status"]:
+            return {"Error": "Failed to update transaction"}, 400
+        
+        #Log this update
+        log = modules.Audit.record_log(admin_userid, f"Transaction created")
+        
+        #Remove used vouchers
+        voucherids = vouchers.split(",")
+        for voucherid in voucherids:
+            #Delete the voucher
+            use_status = modules.Vouchers.use_voucher(voucherid)
+            if not use_status["Status"]:
+                return {"Error": "Failed to delete used voucher"}, 400
+            
+            #Log this update
+            log = modules.Audit.record_log(admin_userid, f"Voucher {voucherid} deleted")
+        
+    
+    return {"Message": "Preorder Successfully updated."}, 200
+
+    
 #----------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':

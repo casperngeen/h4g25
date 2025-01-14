@@ -13,7 +13,7 @@ class Products:
             dict: JSON with key "Products" for all products
         """
         #Get connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Get all the products
         products = conn.execute("SELECT * FROM Products").fetchall()
@@ -34,7 +34,7 @@ class Products:
         """
         
         #Get connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Get Product
         product = conn.execute("SELECT * FROM Products WHERE Productid = ?", (productid,)).fetchone()
@@ -58,7 +58,7 @@ class Products:
         """
         
         #Get connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Update the product
         try:

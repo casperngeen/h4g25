@@ -18,7 +18,7 @@ class Vouchers:
         """
         
         #Get connection to db
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Check if voucher exists first
         voucher = conn.execute("SELECT * FROM Vouchers WHERE Voucherid = ?",(voucherid,)).fetchone()
@@ -47,7 +47,7 @@ class Vouchers:
         """
         
         #Get db connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Check if voucher exists first
         voucher = conn.execute("SELECT Amount FROM Vouchers WHERE Voucherid = ?",(voucherid,)).fetchone()
@@ -71,7 +71,7 @@ class Vouchers:
             dict: JSON with "Vouchers" for all the vouchers
         """
         #Get db connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Get vouchers
         vouchers = conn.execute("SELECT * FROM Vouchers WHERE Userid = ?",(userid,)).fetchall()

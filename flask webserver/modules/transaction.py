@@ -17,7 +17,7 @@ class Transactions:
             dict: JSON with key "Transactions" for all transactions
         """
         #Open connection
-        conn = sqlite3.connect("../sqlite_db") #Path based on root folder
+        conn = sqlite3.connect("../sqlite_db.db") #Path based on root folder
     
         #Grab the transactions
         transactions = conn.execute("SELECT * FROM Transactions WHERE Userid = ?",(userid,)).fetchall()
@@ -46,7 +46,7 @@ class Transactions:
             amount = 0 - amount #flip the sign
             
         #Open connection
-        conn = sqlite3.connect("../sqlite_db") #Path based on root folder
+        conn = sqlite3.connect("../sqlite_db.db") #Path based on root folder
         
         #Insert current transaction record
         try:
