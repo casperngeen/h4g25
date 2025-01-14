@@ -1,6 +1,5 @@
 # Python standard libraries
 import os
-import sqlite3
 from random import shuffle
 
 # Third party libraries
@@ -10,8 +9,6 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 
 # Internal imports 
 import modules
-import modules.products
-import modules.user
 
 # Flask app setup https://blog.miguelgrinberg.com/post/how-to-create-a-react--flask-project
 app = Flask(__name__)

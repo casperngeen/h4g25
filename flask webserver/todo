@@ -1,12 +1,12 @@
 Residents
-    SMS password rest: https://www.sendsmsnow.com/
+    SMS password rest: (email to sms [only m1 got gateway], twilio)
     [done] View voucher balance (how much many vouchers, something like cdc system where it is all whole number)
     [done] view transaction history
     [done] view available products 
     [done] request items 
-    preorder system
+    [done] preorder system
     [done] pay wth voucher (product request)
-    pay wth voucher (preorder system)
+    [done] pay wth voucher (preorder system)
     Prevent user from seeing stuff of others.
     
 
