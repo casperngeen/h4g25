@@ -1,20 +1,17 @@
 # Python standard libraries
-import json
 import os
 import sqlite3
-from datetime import datetime, timedelta
 from random import shuffle
 
 # Third party libraries
-from flask import Flask, redirect, request, url_for, render_template
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
+from flask import Flask, request
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt
 
-import requests
 
 # Internal imports 
-from db import init_db_command, get_db
-from user import User
 import modules
+import modules.products
+import modules.user
 
 # Flask app setup https://blog.miguelgrinberg.com/post/how-to-create-a-react--flask-project
 app = Flask(__name__)
@@ -26,14 +23,6 @@ app.config['JWT_TOKEN_LOCATION'] = ['headers']
 
 # JWT Initialization
 jwt = JWTManager(app)
-
-
-# Naive database setup
-try:
-    init_db_command()
-except sqlite3.OperationalError:
-    # Assume it's already been created
-    pass
 
 
 
@@ -62,38 +51,27 @@ def register():
     username = data.get('username')
     password = data.get('password')
     mobile = data.get('mobile')
-    isadmin = int(data.get('isadmin')) #1 for admin, 0 for normal user
+    is_admin = int(data.get('isadmin')) #1 for admin, 0 for normal user
     status = 1 #1 for active, 0 for suspended
 
-    if not username or not password or not isadmin:
+    if not username or not password or not is_admin:
         return {'error': 'Username, password or isadmin is required'}, 400
 
-
-    conn = get_db_connection()
     
     #Check if user exists
-    existing_user = conn.execute('SELECT * FROM User WHERE username = ?', (username,)).fetchone()
+    existing_user = modules.User.user_exists(username)
     if existing_user:
         return {'Error': 'User already exists'}, 400
 
 
     #Register User
-    try:
-        conn.execute(
-            'INSERT INTO User (username, password, mobile, isadmin, status) VALUES (?, ?, ?, ?, ?)',
-            (username, password, mobile, isadmin, status)
-        )
-        conn.commit()
-        conn.close()
-        
-    except:
-        conn.close()
-        return {"Error": "Failed to register user"}, 401
-    
+    register_status = modules.User.register_user(username,password,mobile,is_admin,status)
+    if not register_status["Status"]:
+        return {'Error': 'Failed to register user'}, 400
     
     #Log event
-    userid = modules.get_userid(username)
-    log = modules.record_log(userid, "User created")
+    userid = modules.User.get_userid(username)["Userid"]
+    log = modules.Audit.record_log(userid, f"User {username} created.")
     
     return {'Message': 'User registered successfully'}, 201
 
@@ -106,14 +84,11 @@ def login():
     password = data.get('password')
 
     #Retreive User
-    conn = get_db_connection()
-    try:
-        user = conn.execute('SELECT * FROM User WHERE username = ?', (username,)).fetchone()
-        conn.close()
+    userid = modules.User.get_userid(username)["Userid"]
+    if not userid:
+        return {"Error": "Failed to find user"}, 400
+    user = modules.User.get_user(userid)["User"]
     
-    except:
-        conn.close()
-        return {"Error": "Failed to find user"}, 401
     
     #Validate User
     if user and user['password'] == password:
@@ -122,7 +97,7 @@ def login():
             access_token = create_access_token(identity=username)
             
             #Log event
-            log = modules.record_log(user["Userid"], "User login")
+            log = modules.Audit.record_log(user["Userid"], "User login")
             
             return {'access_token': access_token, 'isadmin': user['isadmin']}, 200
         else:
@@ -136,13 +111,13 @@ def login():
 @jwt_required()
 def logout():
     data = request.json
-    userid = data["Userid"]
+    username = data["Username"]
     
     jti = get_jwt()['jti']  # JWT ID
     blacklist.add(jti)  # Add the token's jti to the blacklist
     
     #Log event
-    log = modules.record_log(userid, "User logout")
+    log = modules.Audit.record_log(modules.User.get_userid(username)["Userid"], "User logout")
     
     return {'Message': 'Successfully logged out'}, 200
 
@@ -151,7 +126,7 @@ def logout():
 
 #Voucher system (Viewing data)
 
-#View Vouchers
+#View Vouchers (Need more security)
 @app.route('/view_vouchers', methods=['POST'])
 @jwt_required()
 def view_vouchers():
@@ -160,35 +135,21 @@ def view_vouchers():
     username = data['username']
     
     #Grab userid from db based on username
-    userid = modules.get_userid(username)["Userid"]
+    userid = modules.User.get_userid(username)["Userid"]
     
     #Get all vouchers related to this userid
-    try:
-        conn = get_db_connection()
-        vouchers = conn.execute("SELECT * FROM Vouchers WHERE Userid = ?",(userid,)).fetchall()
-        conn.close()
-        
-    except:
-        conn.close()
-        return {"Error":"Failed to retrieve vouchers"}, 404
+    vouchers = modules.Vouchers.get_vouchers(userid)["Vouchers"]
+    if not vouchers:
+        return {"Error":"Failed to retrieve vouchers"}, 400
     
-    #Collate available vouchers into one list with fields userid and amount
-    all_parsed_vouchers = []
-    for voucher in vouchers:
-        parsed_voucher = {}
-        parsed_voucher["Userid"] = voucher["Userid"]
-        parsed_voucher["Amount"] = voucher["Amount"]
-        
-        all_parsed_vouchers.append(parsed_voucher)
-        
     #Log event
-    log = modules.record_log(userid, "User requested all vouchers")
+    log = modules.Audit.record_log(userid, "User requested all vouchers")
     
-    return {"User": username, "Available_Vouchers": all_parsed_vouchers}, 200
+    return {"User": username, "Available_Vouchers": vouchers}, 200
 
 
 
-#View transactions
+#View transactions (Need for security)
 @app.route("/transaction_history", methods=["POST"])
 @jwt_required
 def transaction_history():
@@ -197,19 +158,15 @@ def transaction_history():
     username = data['username']
     
     #Grab userid from db based on username
-    userid = modules.get_userid(username)["Userid"]
+    userid = modules.User.get_userid(username)["Userid"]
     
     #Retrieve all transactions for this user
-    try:
-        conn = get_db_connection()
-        transactions = conn.execute("SELECT * FROM Transactions WHERE Userid = ?",(userid,)).fetchall()
-        conn.close()
+    transactions = modules.Transactions.get_transactions(userid)["Transactions"]
+    if not transactions:
+        return {"Error": "Failed to retrieve transactions"}, 400
     
-    except:
-        conn.close()
-        return {"Error": "Failed to retrieve transactions"}, 404
     
-    #Parse transactions to contain createdtime,amount,description where description is optional
+    #Parse transactions to contain createdtime,amount,vouchers,description where description is optional
     all_parsed_transactions = []
     for transaction in transactions:
         parsed_transaction = {}
@@ -217,6 +174,7 @@ def transaction_history():
         #Add the required fields in
         parsed_transaction["Created"] = transaction["Created"]
         parsed_transaction["Amount"] = transaction["Amount"]
+        parsed_transaction["Vouchers"] = ",".join([modules.Vouchers.check_value(voucherid)["Amount"] for voucherid in transaction["Vouchers"].strip().split(",")])
         #Try except here as description is an optional field
         try:
             parsed_transaction["Description"] = transaction["Description"]
@@ -227,7 +185,7 @@ def transaction_history():
         all_parsed_transactions.append(parsed_transaction)
         
     #Log event
-    log = modules.record_log(userid, "User requested all transaction history")
+    log = modules.Audit.record_log(userid, "User requested all transaction history")
     
     return {"User": username, "Transactions": all_parsed_transactions}
 
@@ -235,70 +193,158 @@ def transaction_history():
 
 #----------------------------------------------------------------------------------------------------------------
 
-#Viewing, ordering products
+#Inventory Management
 
+
+#View all products
 @app.route("/view_products", methods=["GET"])
 @jwt_required
 def view_products():
+    
     #Get all products
-    conn = get_db_connection()
+    products = modules.Products.get_products()["Products"]
+    if not products:
+        return {"Error":"Failed to retrieve products"}, 400
     
-    try:
-        products = conn.execute("SELECT * FROM Products").fetchall()
-        conn.close()
+    return {"Products": products}, 200
+
+
+
+#----------------------------------------------------------------------------------------------------------------
+
+#Ordering (Requests)
+
+#Admin view all product requests
+@app.route("/view_product_requests", methods=["POST"])
+@jwt_required
+def view_product_requests():
+    #Get user id
+    data = request.json
+    username = data["Username"]
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Check if user is an admin
+    if not modules.User.isadmin(userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    #Retrieve all product requests
+    product_requests = modules.Product_Requests.get_requests()["Product_Requests"]
+    
+    
+    #Add Username and Productname of each user into the data and change voucherids into values 
+    for product_request in product_requests:
+        #Add Username
+        username = modules.User.get_user(product_request["Userid"])["Name"]
+        product_request["Username"] = username
         
-    except:
-        conn.close()
-        return {"Error":"Failed to retrieve products"}, 404
+        #Add Productname
+        productname = modules.Products.get_product(product_request["Productid"])["Name"]
+        product_request["Productname"] = productname    
+        
+        #Change voucherids into voucher values
+        voucherids = product_request["Vouchers"].strip().split(",")
+        product_request["Vouchers"] = ",".join([modules.Vouchers.check_value(voucherid)["Amount"] for voucherid in voucherids])
+       
     
-    return {"Products": products}
+    #Returns all product requests with fields: Requestid, Userid, Username, Productid, Productname, Quantity, Status, Created
+    return {"Product_Requests": product_requests}
 
 
+
+#Request product
 @app.route("/request_product", methods=["POST"])
 @jwt_required
 def request_product():
     #Retrieve data
     data = request.json
-    userid = data["Userid"]
+    username = data["Username"]
     productid = data["Productid"]
     quantity = data["Quantity"]
+    amount = data["Amount"] #Total amount to pay
+    vouchers = data["Vouchers"] #Voucherids of vouchers to be used in csv format
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
 
     #Check if this product still have this quantity left
     #Get current stock
-    conn = get_db_connection()
-    try:
-        stock = conn.execute("SELECT Stock from Products WHERE Productid = ?", (productid,)).fetchone()
-
-    except:
-        conn.close()
-        return {"Error": "Unable to retrieve product"}, 404
+    product = modules.Products.get_product(productid)["Product"]
+    if not product:
+        return {"Error": "Unable to retrieve product"}, 400
+    
+    stock = product["Stock"]
     
     #Check if stock enough
-    if stock >= quantity:
-        stock_left = stock - quantity
-    else:
-        #Trigger error, not enough stock
+    if stock < quantity:
         return {"Error": f"Requested quantity exceeds current stock of {stock}"}, 404
     
     
     #Update product requests table
-    try:
-        conn.execute(
-            "INSERT INTO Product_Requests (Userid, Productid, Quantity, Status) VALUES (?, ?, ?, ?)",
-            (userid, productid, quantity, "pending")
-        )
-        conn.commit()
-    
-    except:
-        conn.close()
-        return {"Error": "Failed to update request"}, 404
+    request_status = modules.Product_Requests.create_request(userid, productid, quantity, amount, vouchers, "pending")
+    if not request_status["Status"]:
+        return {"Error": "Failed to create request"}, 400
 
     #Log this event
-    log = modules.record_log(userid, f"Request product {productid} of quantity {quantity}")
+    log = modules.Audit.record_log(userid, f"Request product {productid} of quantity {quantity}")
     
     return {"Message": "Product request successfully updated, please await approval"}, 200
     
+
+
+#Admin approve/reject request
+@app.route("/update_product_request")
+@jwt_required
+def update_product_request():
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    requestid = data["Requestid"]
+    action = data["Action"] #Should be 'approved'/'rejected'
     
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Confirm that user performing action is an admin
+    if not modules.User.isadmin(userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    #Update the request status in the Product_Requests Table
+    update_status = modules.Product_Requests.update_request_status(requestid, action)
+    if not update_status["Status"]:
+        return {"Error": "Failed to update request"}, 400
+    
+    #Log this update
+    log = modules.Audit.record_log(userid, f"Product Request {requestid}: {action}")
+    
+    
+    #Update various tables if approved, else no need care
+    if action == "approved":
+        #Retrieve needed fields from db
+        product_request = modules.Product_Requests.get_request(requestid)["Product_Request"]
+        productid = product_request["Productid"]
+        quantity = product_request["Quantity"]
+        vouchers = product_request["Vouchers"]
+        
+        #Update inventory (Stock in Products Table)
+        #First get current stock
+        product = modules.Products.get_product(productid)["Product"]
+        if not product:
+            return {"Error": "Failed to find product"}, 400
+        
+        #Calculate stock left
+        stock_left = product["Stock"] - quantity
+        
+        #Update stock left
+        update_stock_status = modules.Products.update_product(productid, product["Name"], stock_left, product["Price"])
+        if not update_stock_status["Status"]:
+            return {"Error": "Failed to update stock"}, 400
+        
+        
+        #Update Transactions (New record in Transaction Table)
+
+
 
 #----------------------------------------------------------------------------------------------------------------
 
