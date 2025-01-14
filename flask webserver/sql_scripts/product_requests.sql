@@ -1,10 +1,12 @@
 CREATE TABLE "Product_Requests" (
-    "Requestid" INTEGER NOT NULL UNIQUE,
-    "Userid" INTEGER NOT NULL,
-    "Productid" INTEGER NOT NULL,
-    "Quantity" INTEGER NOT NULL,
-    "Status" TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
-    "Created" DATETIME DEFAULT CURRENT_TIMESTAMP,
+    "Requestid"     INTEGER NOT NULL UNIQUE,
+    "Userid"        INTEGER NOT NULL,
+    "Productid"     INTEGER NOT NULL,
+    "Quantity"      INTEGER NOT NULL,
+    "Amount"        REAL NOT NULL,
+    "Vouchers"      TEXT NOT NULL,
+    "Status"        TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
+    "Created"       DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY("Requestid" AUTOINCREMENT),
     CONSTRAINT "user"
         FOREIGN KEY ("Userid") 

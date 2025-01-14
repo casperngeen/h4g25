@@ -6,6 +6,8 @@ Residents
     request items 
     preorder system
     pay wth voucher
+    Prevent user from seeing stuff of others.
+    
 
 Admin
     User management ([done] Add, suspend and change password)
@@ -13,3 +15,7 @@ Admin
     Product request with tracking
     view and update of audit logs
     generate pdf reports (pdfkit/rerportlab) for all weekly request and inventory summary
+
+Add voucherids used in tables and functions related to product_requests, transactions
+Do i want to put isadmin in register? or make new api
+Need to make secure to prevent IDOR
