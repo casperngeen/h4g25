@@ -304,11 +304,14 @@ def update_product_request():
     action = data["Action"] #Should be 'approved'/'rejected'
     
     #Get userid
-    userid = modules.User.get_userid(username)["Userid"]
+    admin_userid = modules.User.get_userid(username)["Userid"]
     
     #Confirm that user performing action is an admin
-    if not modules.User.isadmin(userid):
+    if not modules.User.isadmin(admin_userid):
         return {"Error": "Access Forbidden"}, 401
+    
+    #Get userid of the user of the request
+    userid = modules.Product_Requests.get_request(requestid)["Userid"]
     
     #Update the request status in the Product_Requests Table
     update_status = modules.Product_Requests.update_request_status(requestid, action)
@@ -316,7 +319,7 @@ def update_product_request():
         return {"Error": "Failed to update request"}, 400
     
     #Log this update
-    log = modules.Audit.record_log(userid, f"Product Request {requestid}: {action}")
+    log = modules.Audit.record_log(admin_userid, f"Product Request {requestid}: {action}")
     
     
     #Update various tables if approved, else no need care
@@ -326,6 +329,8 @@ def update_product_request():
         productid = product_request["Productid"]
         quantity = product_request["Quantity"]
         vouchers = product_request["Vouchers"]
+        
+        
         
         #Update inventory (Stock in Products Table)
         #First get current stock
@@ -341,8 +346,32 @@ def update_product_request():
         if not update_stock_status["Status"]:
             return {"Error": "Failed to update stock"}, 400
         
+        #Log this update
+        log = modules.Audit.record_log(admin_userid, f"Product {productid} updated")
+        
         
         #Update Transactions (New record in Transaction Table)
+        amount = product["Price"] * quantity
+        transaction_status = modules.Transactions.record_transaction(userid, amount, "Deduct", vouchers)
+        if not transaction_status["Status"]:
+            return {"Error": "Failed to update transaction"}, 400
+        
+        #Log this update
+        log = modules.Audit.record_log(admin_userid, f"Transaction created")
+        
+        #Remove used vouchers
+        voucherids = vouchers.split(",")
+        for voucherid in voucherids:
+            #Delete the voucher
+            use_status = modules.Vouchers.use_voucher(voucherid)
+            if not use_status["Status"]:
+                return {"Error": "Failed to delete used voucher"}, 400
+            
+            #Log this update
+            log = modules.Audit.record_log(admin_userid, f"Voucher {voucherid} deleted")
+        
+    
+    return {"Message": "Product Request Successfully updated."}, 200
 
 
 
