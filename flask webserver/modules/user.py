@@ -16,7 +16,7 @@ class User:
             bool: True if user exists, else False
         """
         #Get Connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Try to retrieve user
         existing_user = conn.execute('SELECT * FROM User WHERE Name = ?', (username,)).fetchone()
@@ -40,7 +40,7 @@ class User:
         """
         
         #Open connection to db
-        conn = sqlite3.connect("../sqlite_db") #Pathing based on root directory
+        conn = sqlite3.connect("../sqlite_db.db") #Pathing based on root directory
         
         #Retrieve userid
         userid = conn.execute("SELECT Userid from User where Name = ?",(username,)).fetchone()
@@ -64,7 +64,7 @@ class User:
         """
 
         #Get connection
-        conn = sqlite3.connect("../sqlite_db")
+        conn = sqlite3.connect("../sqlite_db.db")
         
         #Get username
         user = conn.execute("SELECT * FROM User WHERE Userid = ?", (userid,)).fetchone()
@@ -86,7 +86,7 @@ class User:
         """
         
         #Get connection to db
-        conn = sqlite3.connect("../sqlite_db") #Based on root path
+        conn = sqlite3.connect("../sqlite_db.db") #Based on root path
         
         #Get Isadmin field
         user = conn.execute("SELECT Isadmin FROM User where Userid = ?", (userid,)).fetchone()
@@ -114,7 +114,7 @@ class User:
         """
         
         #Get connection to db
-        conn = sqlite3.connect("../sqlite_db") #Based on root path
+        conn = sqlite3.connect("../sqlite_db.db") #Based on root path
         
         #Create user
         try:
