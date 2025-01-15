@@ -1,7 +1,9 @@
 CREATE TABLE "User" (
-	"UserId"	INTEGER,
-	"Name"	TEXT NOT NULL,
+	"Userid"	INTEGER NOT NULL UNIQUE,
+	"Name"		TEXT NOT NULL UNIQUE,
 	"Password"	TEXT NOT NULL,
-    "Isadmin"   INTEGER NOT NULL,
-	PRIMARY KEY("UserId")
+	"Mobile"	TEXT NOT NULL,
+	"Isadmin"	INTEGER NOT NULL,
+	"Status"	INTEGER NOT NULL,
+	PRIMARY KEY("Userid" AUTOINCREMENT)
 );

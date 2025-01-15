@@ -1,0 +1,14 @@
+Residents
+    SMS password rest: https://www.sendsmsnow.com/
+    View voucher balance (how much money)
+    view transaction history
+    view available products
+    request items
+    preorder system
+
+Admin
+    User management (Add, suspend and change password)
+    Approve/reject tasks
+    Product request with tracking
+    view and update of audit logs
+    generate pdf reports (pdfkit/rerportlab) for all weekly request and inventory summary
