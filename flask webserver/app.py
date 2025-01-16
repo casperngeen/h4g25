@@ -708,6 +708,10 @@ def generate_request_report():
     #Get report path
     report_path = modules.Reports.generate_weekly_requests()["Report Path"]
     
+    #Log this update
+    log = modules.Audit.record_log(admin_userid, f"Weekly request report generated")
+        
+    
     #Send the report back
     return send_file(
             report_path,
@@ -734,6 +738,10 @@ def generate_inventory_report():
     
     #Get report path
     report_path = modules.Reports.view_inventory()["Report Path"]
+    
+    #Log this update
+    log = modules.Audit.record_log(admin_userid, f"Inventory report generated")
+        
     
     #Send the report back
     return send_file(
