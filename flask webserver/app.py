@@ -3,7 +3,7 @@ import os
 from random import shuffle
 
 # Third party libraries
-from flask import Flask, request
+from flask import Flask, request, send_file
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt
 
 
@@ -689,7 +689,60 @@ def update_preorder():
     
     return {"Message": "Preorder Successfully updated."}, 200
 
+#----------------------------------------------------------------------------------------------------------------
+#Generate reports
+@app.route("/generate_request_report", methods=["POST"])
+@jwt_required
+def generate_request_report():
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
     
+    #Get userid
+    admin_userid = modules.User.get_userid(username)["Userid"]
+    
+    #Confirm that user performing action is an admin
+    if not modules.User.isadmin(admin_userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    #Get report path
+    report_path = modules.Reports.generate_weekly_requests()["Report Path"]
+    
+    #Send the report back
+    return send_file(
+            report_path,
+            as_attachment=True,  # Prompts download
+            download_name="Weekly Requests Report",  # Use the requested filename for download
+            mimetype="application/pdf"  # Correct MIME type
+        )
+
+
+
+@app.route("/generate_inventory_report", methods=["POST"])
+@jwt_required
+def generate_inventory_report():
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    
+    #Get userid
+    admin_userid = modules.User.get_userid(username)["Userid"]
+    
+    #Confirm that user performing action is an admin
+    if not modules.User.isadmin(admin_userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    #Get report path
+    report_path = modules.Reports.view_inventory()["Report Path"]
+    
+    #Send the report back
+    return send_file(
+            report_path,
+            as_attachment=True,  # Prompts download
+            download_name="Inventory Report",  # Use the requested filename for download
+            mimetype="application/pdf"  # Correct MIME type
+        )
+
 #----------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
