@@ -1,7 +1,7 @@
 import sqlite3
 
 class Vouchers_Task:
-    
+
     def get_tasks() -> dict:
         """
         Function to retreive all tasks
@@ -36,12 +36,14 @@ class Vouchers_Task:
         try:
             # Insert voucher request into a pending table
             conn.execute(
+
                 "INSERT INTO Voucher_Tasks (Userid, Description, Amount, Status) VALUES (?, ?, ?, ?)",
                 (userid, description, amount, "pending"),
             )
             conn.commit()
             conn.close()
             return {"Status": True, "Message": f"Voucher request for {amount} submitted successfully."}
+          
         except Exception as e:
             conn.close()
             return {"Status": False, "Message": f"Failed to request voucher: {str(e)}"}
@@ -63,6 +65,7 @@ class Vouchers_Task:
         conn = sqlite3.connect("../sqlite_db")
 
         try:
+
             if action == "approved":
                 # Move the request to the Vouchers table
                 voucher = conn.execute(
@@ -102,3 +105,31 @@ class Vouchers_Task:
             return {"Status": False, "Message": f"Failed to process voucher: {str(e)}"}
 
     
+
+    def add_voucher(userid: str, description: str, amount: float) -> dict:
+        """
+        Function to add a voucher directly to the Vouchers table.
+
+        Args:
+            userid (str): Unique identifier of the user.
+            description (str): Description of the voucher.
+            amount (float): Amount for the voucher.
+
+        Returns:
+            dict: Status of the action.
+        """
+        # Open connection to database
+        conn = sqlite3.connect("../sqlite_db")
+
+        try:
+            conn.execute(
+                "INSERT INTO Vouchers (Userid, Description, Amount) VALUES (?, ?, ?)",
+                (userid, description, amount),
+            )
+            conn.commit()
+            conn.close()
+            return {"Status": True, "Message": f"Voucher for {userid} added successfully."}
+        except Exception as e:
+            conn.close()
+            return {"Status": False, "Message": f"Failed to add voucher: {str(e)}"}
+
