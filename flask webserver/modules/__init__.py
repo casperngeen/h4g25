@@ -5,3 +5,4 @@ from audit import Audit
 from products import Products
 from product_requests import Product_Requests
 from preorders import Preorders
+from vouchers_task import Vouchers_Task

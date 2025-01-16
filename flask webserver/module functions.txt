@@ -1,9 +1,76 @@
+Login:
+
+
+
 User:
 
+user_exists(username:str) -> bool
+    Function that takes in a username and checks if that user exists
+
+    Input -> username (str): The username of the user to check.
+
+    Output -> True (bool): If the user exists.
+              False (bool): If the user does not exist.
+
+get_userid(username:str) -> dict
+    Function that takes in a username and returns the userid
+
+    Input -> username (str): The username for which the unique userid is retrieved.
+
+    Output -> dict: {"Userid": <unique user ID>}
+
+get_user(userid:str) -> dict
+    Function that takes in a userid and returns that user
+    
+    Input -> userid (str): The unique identifier of the user to retrieve.
+
+    Output -> dict: {"User": <user record>}
+
+def isadmin(userid:str) -> bool
+    Function to validate if a user of this userid is an admin
+
+    Input -> username (str): userid (str): The unique identifier of the user to check for admin status.
+
+    Output -> True (bool): If the user is an admin.
+              False (bool): If the user is not an admin.
+
+register_user(username:str, password:str, mobile:str, is_admin:int, status:int) -> dict
+    Function to register a user
+
+    Input -> username (str): The username of the user to register. Must be unique.
+             password (str): The password for the user.
+             mobile (str): The mobile number for account recovery.
+             is_admin (int): Indicates admin status (1 for admin, 0 for a regular user).
+             status (int): Indicates account status (1 for active, 0 for suspended).
+    
+    Output -> Success -> dict: {"Status": True, "Message": "Successfully created user {username}"}
+              Failure -> dict: {"Status": False, "Message": "Failed to register user"}
 
 
 Vouchers:
 
+use_voucher(voucherid:str) -> dict
+    Function that takes in a voucherid and uses it, returns status
+    
+    Input -> voucherid (str): The unique identifier of the voucher to be used.
+
+    Output -> Success -> dict: {"Status": True, "Message": f"Voucher {voucherid} successfully deleted."}
+              Failure -> dict: {"Status": False, "Message": "Error, voucher does not exist."}
+
+check_value(voucherid:str) -> dict
+    Function to return the value of a certain voucher given its voucherid
+    
+    Input -> voucherid (str): The unique identifier of the voucher.
+
+    Output -> Success -> dict: {"Amount": <voucher value>}
+              Failure -> dict: {"Status": False, "Message": "Error, voucher does not exist."}
+
+get_vouchers(userid:str) -> dict
+    Function to get all vouchers under a userid
+
+    Input -> userid (str): The unique identifier of the user.
+
+    Output -> dict: {"Vouchers": <list of voucher records>}
 
 
 Voucher Tasks:
@@ -12,16 +79,94 @@ Voucher Tasks:
 
 Transactions:
 
+get_transactions(userid:str) -> dict
+    Function to grab all transaction record for a user
+
+    Input -> userid (str): The unique identifier for a user.
+
+    Output -> dict: {"Transactions": <list of transaction records>}
+
+record_transaction(userid:str, amount:float, action:str, vouchers:str, description:str="") -> dict
+    Function to record transactions into the Transactions table
+
+    Input -> userid (str): The unique identifier for the user associated with this transaction.
+             amount (float): The transaction amount. The amount is flipped to negative if the action is "Deduct".
+             action (str): Specifies whether the transaction is an "Add" or "Deduct" action.
+             vouchers (str): A comma-separated list of voucher IDs associated with the transaction.
+             description (str, optional): Additional information about the transaction. Defaults to an empty string ("").
+
+    Output -> Success -> dict: {"Status": True, "Message": f"Transaction of {amount} successfully recorded."}
+              Failure -> dict: {"Status": False, "Message": "Failed to insert into database."}
 
 
 Products:
 
+get_products() -> dict
+    Function to get all products
+    
+    Output -> {"Products": <list of all products>}
+
+get_product(productid:str) -> dict
+    Function that takes in a productid and returns the product
+
+    Input -> productid (str): The unique identifier for a specific product.
+
+    Output -> dict: {"Product": <the product details>}
+
+update_product(productid:str, productname:str, stock:int, price:float) -> dict
+    Function to update product
+
+    Input -> productid (str): The unique identifier for the product.
+             productname (str): The new name for the product.
+             stock (int): The updated stock quantity for the product.
+             price (float): The updated price for the product.
+    
+    Output -> Success -> dict: {"Status": True, "Message": "Product updated successfully"}
+              Failure -> dict: {"Status": False, "Message": "Failed to update product"}
 
 
 Product Requests:
 
+get_requests() -> dict
+    Function to get all product requests
+    
+    Output -> dict: {"Product_Requests": <list of all product requests>}
+
+
+get_request(requestid:str) -> dict
+    Function to get product request
+    
+    Input -> requestid (str): Request unique identifier
+    
+    Output -> dict: {"Product_Request": <the product request details>}
+
+create_request(userid:str, productid:str, quantity:int, amount:float, vouchers:str, status:str) -> dict
+    Function to create a new product request
+    
+    Input -> userid (str): User's unique identifier.
+             productid (str): Product's unique identifier.
+             quantity (int): The quantity requested.
+             amount (float): The total cost of the request.
+             vouchers (str): Comma-separated voucher IDs.
+             status (str): The status of the request, e.g., 'pending', 'approved', or 'rejected'.
+
+    Output -> Success -> dict: {"Status": True, "Message": "Request created."}
+              Failure -> dict: {"Status": False, "Message": "Request failed to be created."}
+
+update_request_status(requestid:str, action:str) -> dict
+     Function to update request status, from pending to approved/rejected
+
+    Input -> requestid (str): The unique identifier for the product request.
+             action (str): The new status to set for the request, e.g., 'approved' or 'rejected'.
+
+    Output -> Success -> dict: {"Status": True, "Message": f"Request {requestid} updated to {action}."}
+              Failure -> dict: {"Status": False, "Message": f"Request {requestid} failed to update."}
+
 
 
 Audit:
-
+Function to log any action taken by a user for auditing
+Input(Str) -> Userid of the user who performed this action
+            Action of the user
+Output -> dict: Status of the recording, and error messages if any.
 
