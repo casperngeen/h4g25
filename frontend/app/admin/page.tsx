@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 const AdminDashboard = () => {
   const [voucherRequests, setVoucherRequests] = useState<any[]>([]);
@@ -10,138 +11,172 @@ const AdminDashboard = () => {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
 
   useEffect(() => {
-    setVoucherRequests([
-      { id: 'v1', name: 'Voucher A', status: 'Pending' },
-      { id: 'v2', name: 'Voucher B', status: 'Pending' },
-    ]);
-    setProductRequests([
-      { id: 'p1', name: 'Product A', status: 'Pending' },
-      { id: 'p2', name: 'Product B', status: 'Pending' },
-    ]);
-    setInventory([
-      { productId: 'p1', productName: 'Product A', quantity: 10 },
-      { productId: 'p2', productName: 'Product B', quantity: 15 },
-    ]);
+    const fetchData = async () => {
+      try {
+        const voucherResponse = await fetch('/api/voucher-requests');
+        const productResponse = await fetch('/api/product-requests');
+        const inventoryResponse = await fetch('/api/inventory');
+
+        const voucherData = await voucherResponse.json();
+        const productData = await productResponse.json();
+        const inventoryData = await inventoryResponse.json();
+
+        setVoucherRequests(voucherData);
+        setProductRequests(productData);
+        setInventory(inventoryData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const approveVoucher = (voucherId: string) => {
-    setVoucherRequests(voucherRequests.map((voucher) =>
-      voucher.id === voucherId ? { ...voucher, status: 'Approved' } : voucher
-    ));
-    setAuditLogs([...auditLogs, `Voucher ${voucherId} approved.`]);
+  const approveVoucher = async (voucherId: string) => {
+    try {
+      const response = await fetch(`/api/voucher-requests/${voucherId}/approve`, { method: 'POST' });
+      const updatedVoucher = await response.json();
+      
+      setVoucherRequests(voucherRequests.map(voucher =>
+        voucher.id === voucherId ? updatedVoucher : voucher
+      ));
+      setAuditLogs([...auditLogs, `Voucher ${voucherId} approved.`]);
+    } catch (error) {
+      console.error('Error approving voucher:', error);
+    }
   };
 
-  const rejectVoucher = (voucherId: string) => {
-    setVoucherRequests(voucherRequests.map((voucher) =>
-      voucher.id === voucherId ? { ...voucher, status: 'Rejected' } : voucher
-    ));
-    setAuditLogs([...auditLogs, `Voucher ${voucherId} rejected.`]);
+  const rejectVoucher = async (voucherId: string) => {
+    try {
+      const response = await fetch(`/api/voucher-requests/${voucherId}/reject`, { method: 'POST' });
+      const updatedVoucher = await response.json();
+      
+      setVoucherRequests(voucherRequests.map(voucher =>
+        voucher.id === voucherId ? updatedVoucher : voucher
+      ));
+      setAuditLogs([...auditLogs, `Voucher ${voucherId} rejected.`]);
+    } catch (error) {
+      console.error('Error rejecting voucher:', error);
+    }
   };
 
-  const approveProduct = (productId: string) => {
-    setProductRequests(productRequests.map((product) =>
-      product.id === productId ? { ...product, status: 'Approved' } : product
-    ));
-    setAuditLogs([...auditLogs, `Product ${productId} approved.`]);
+  const approveProduct = async (productId: string) => {
+    try {
+      const response = await fetch(`/api/product-requests/${productId}/approve`, { method: 'POST' });
+      const updatedProduct = await response.json();
+      
+      setProductRequests(productRequests.map(product =>
+        product.id === productId ? updatedProduct : product
+      ));
+      setAuditLogs([...auditLogs, `Product ${productId} approved.`]);
+    } catch (error) {
+      console.error('Error approving product:', error);
+    }
   };
 
-  const rejectProduct = (productId: string) => {
-    setProductRequests(productRequests.map((product) =>
-      product.id === productId ? { ...product, status: 'Rejected' } : product
-    ));
-    setAuditLogs([...auditLogs, `Product ${productId} rejected.`]);
+  const rejectProduct = async (productId: string) => {
+    try {
+      const response = await fetch(`/api/product-requests/${productId}/reject`, { method: 'POST' });
+      const updatedProduct = await response.json();
+      
+      setProductRequests(productRequests.map(product =>
+        product.id === productId ? updatedProduct : product
+      ));
+      setAuditLogs([...auditLogs, `Product ${productId} rejected.`]);
+    } catch (error) {
+      console.error('Error rejecting product:', error);
+    }
   };
 
-  const updateInventory = (productId: string, quantity: number) => {
-    setInventory(inventory.map((item) =>
-      item.productId === productId ? { ...item, quantity } : item
-    ));
-    setAuditLogs([...auditLogs, `Inventory updated for product ${productId}.`]);
-  };
-
-  const generateReport = () => {
-    setReports([
-      {
-        type: 'Weekly Requests',
-        data: voucherRequests.length + productRequests.length,
-      },
-      {
-        type: 'Inventory Summary',
-        data: inventory.reduce((total, item) => total + item.quantity, 0),
-      },
-    ]);
+  const updateInventory = async (productId: string, quantity: number) => {
+    try {
+      const response = await fetch(`/api/inventory/${productId}/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity }),
+      });
+      const updatedInventory = await response.json();
+      
+      setInventory(inventory.map(item =>
+        item.productId === productId ? updatedInventory : item
+      ));
+      setAuditLogs([...auditLogs, `Inventory updated for product ${productId}.`]);
+    } catch (error) {
+      console.error('Error updating inventory:', error);
+    }
   };
 
   return (
     <div className="admin-dashboard">
-      <header className="dashboard-header">
-        <h1>Admin Dashboard</h1>
-        <button onClick={generateReport} className="generate-report-btn">Generate Reports</button>
-      </header>
+      <div className="sidebar">
+        {/* Position logo at top right */}
+        <Image src="/logo.png" alt="Welfare Centre Logo" width={150} height={150} className="logo" />
+      </div>
+      <div className="content">
+        <div className="dashboard-header">
+          <h1>Admin Dashboard</h1>
+          <button className="generate-report-btn">Generate Report</button>
+        </div>
 
-      <section className="task-section">
-        <h2>Voucher Requests</h2>
-        <ul className="task-list">
-          {voucherRequests.map((voucher) => (
-            <li key={voucher.id} className="task-item">
-              <span>{voucher.name}</span>
-              <button onClick={() => approveVoucher(voucher.id)} className="approve-btn">Approve</button>
-              <button onClick={() => rejectVoucher(voucher.id)} className="reject-btn">Reject</button>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <div className="task-section">
+          <h2>Voucher Requests</h2>
+          <table className="task-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {voucherRequests.map(voucher => (
+                <tr key={voucher.id}>
+                  <td>{voucher.user}</td>
+                  <td>{voucher.status}</td>
+                  <td>
+                    <button className="approve-btn" onClick={() => approveVoucher(voucher.id)}>Approve</button>
+                    <button className="reject-btn" onClick={() => rejectVoucher(voucher.id)}>Reject</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      <section className="task-section">
-        <h2>Product Requests</h2>
-        <ul className="task-list">
-          {productRequests.map((product) => (
-            <li key={product.id} className="task-item">
-              <span>{product.name}</span>
-              <button onClick={() => approveProduct(product.id)} className="approve-btn">Approve</button>
-              <button onClick={() => rejectProduct(product.id)} className="reject-btn">Reject</button>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <div className="inventory-section">
+          <h2>Product Requests</h2>
+          <table className="inventory-table">
+            <thead>
+              <tr>
+                <th>Product Name</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {productRequests.map(product => (
+                <tr key={product.id}>
+                  <td>{product.name}</td>
+                  <td>
+                    <button className="approve-btn" onClick={() => approveProduct(product.id)}>Approve</button>
+                    <button className="reject-btn" onClick={() => rejectProduct(product.id)}>Reject</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      <section className="inventory-section">
-        <h2>Inventory Management</h2>
-        <ul className="inventory-list">
-          {inventory.map((item) => (
-            <li key={item.productId} className="inventory-item">
-              <span>{item.productName} - {item.quantity}</span>
-              <input
-                type="number"
-                value={item.quantity}
-                onChange={(e) => updateInventory(item.productId, Number(e.target.value))}
-                className="inventory-update-input"
-              />
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="audit-section">
-        <h2>Audit Logs</h2>
-        <ul className="audit-log-list">
-          {auditLogs.map((log, index) => (
-            <li key={index} className="audit-log-item">{log}</li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="report-section">
-        <h2>Reports</h2>
-        <ul className="report-list">
-          {reports.map((report, index) => (
-            <li key={index} className="report-item">
-              <h3>{report.type}</h3>
-              <p>{report.data}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <div className="audit-section">
+          <h2>Audit Logs</h2>
+          <ul className="audit-log-list">
+            {auditLogs.map((log, index) => (
+              <li className="audit-log-item" key={index}>
+                <span>{log}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 };
