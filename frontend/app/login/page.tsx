@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight } from 'lucide-react'; 
@@ -15,7 +13,7 @@ const LoginSignupPage = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [userType, setUserType] = useState('');
+  const [userType, setUserType] = useState(''); // Resident or Admin
   const [error, setError] = useState('');
 
   const toggleMode = () => setIsLogin(!isLogin);
@@ -84,11 +82,6 @@ const LoginSignupPage = () => {
       console.error('Registration failed', error);
       setError('An error occurred while registering.');
     }
-  };
-
-  const formVariants = {
-    hidden: { opacity: 0, x: -30 },
-    visible: { opacity: 1, x: 0 },
   };
 
   return (
