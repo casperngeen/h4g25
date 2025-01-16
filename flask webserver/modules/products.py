@@ -54,7 +54,7 @@ class Products:
             price (float): Pricing
 
         Returns:
-            dict: _description_
+            dict: status
         """
         
         #Get connection
@@ -71,6 +71,64 @@ class Products:
             return {"Status": False, "Message": "Failed to update product"}
         
         return {"Status": True, "Message": "Product updated successfully"}
+            
+            
+            
+    def create_product(productname:str, stock:int, price:float) -> dict:
+        """
+        Function to create product
+
+        Args:
+            productname (str): Product name
+            stock (int): Stock left
+            price (float): Pricing
+
+        Returns:
+            dict: status
+        """
+        
+        #Get connection
+        conn = sqlite3.connect("../sqlite_db.db")
+        
+        #Create the product
+        try:
+            conn.execute(
+                "INSERT INTO Products (Name, Stock, Price) VALUES (?, ?, ?)",
+                (productname, stock, price))
+            conn.commit()
+            conn.close()
+        
+        except:
+            conn.close()
+            return {"Status": False, "Message": "Failed to create product"}
+        
+        return {"Status": True, "Message": "Product created successfully"}
         
         
     
+    def delete_product(productid:str) -> dict:
+        """
+        Function to delete a product
+
+        Args:
+            productid (str): Id of the product to delete
+
+        Returns:
+            dict: status
+        """
+        #Get connection
+        conn = sqlite3.connect("../sqlite_db.db")
+        
+        #Delete the product
+        try:
+            conn.execute(
+                "DELETE FROM Products WHERE Productid = ?",
+                (productid,))
+            conn.commit()
+            conn.close()
+        
+        except:
+            conn.close()
+            return {"Status": False, "Message": "Failed to delete product"}
+        
+        return {"Status": True, "Message": "Product deleted successfully"}

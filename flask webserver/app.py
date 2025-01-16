@@ -116,7 +116,7 @@ def logout():
 
 #--------------------------------------------------------------------------------------------------------------------------
 
-#Voucher system (Viewing data)
+#Voucher system 
 
 #View Vouchers (Need more security)
 @app.route('/view_vouchers', methods=['POST'])
@@ -183,6 +183,83 @@ def transaction_history():
 
 
 
+@app.route("get_voucher_tasks", methods=["POST"])
+@jwt_required
+def get_voucher_tasks():
+    #Get Data
+    data = request.json
+    username = data["Username"]
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Check if user is an admin
+    if not modules.User.isadmin(userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    #Get the tasks
+    voucher_tasks = modules.Vouchers_Task.get_tasks()
+    if not voucher_tasks:
+        return {"Error": "Failed to retrieve tasks"}, 400
+    
+    return {"Voucher_Tasks": voucher_tasks}, 200
+    
+
+
+@app.route("/create_voucher_task", methods=["POST"])
+@jwt_required
+def create_voucher_task():
+    #Get Data
+    data = request.json
+    username = data["Username"]
+    description = data["Description"]
+    amount = data["Amount"]
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Create the task
+    create_status = modules.Vouchers_Task.request_voucher(userid, description, amount)["Status"]
+    if not create_status:
+        return {"Error": "Failed to create task"}, 400
+    
+    #Log this event
+    log = modules.Audit.record_log(userid, f"Voucher task created")
+    
+    
+    return {"Message": "Task Successfully Created"}, 200
+
+
+
+@app.route("/update_voucher_task", methods=["POST"])
+@jwt_required
+def update_voucher_task():
+    #Get Data
+    data = request.json
+    username = data["Username"]
+    requestid = data["Requestid"]
+    action = data["Action"]
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Check if user is an admin
+    if not modules.User.isadmin(userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    
+    #Update the voucher_task
+    update_status = modules.Vouchers_Task.approve_reject_voucher(requestid, action)["Status"]
+    if not update_status:
+        return {"Error": "Failed to update task"}, 400
+    
+    #Log this event
+    log = modules.Audit.record_log(userid, f"Voucher task {requestid} updated")
+    
+    
+    return {"Message": "Task Successfully Updated"}, 200
+    
+    
 #----------------------------------------------------------------------------------------------------------------
 
 #Inventory Management
@@ -201,6 +278,100 @@ def view_products():
     return {"Products": products}, 200
 
 
+
+#Create Product
+@app.route("/create_product", methods=["POST"])
+@jwt_required
+def create_product():
+    
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    productname = data["Productname"]
+    stock = data["Stock"]
+    price = data["Price"]
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Check if user is an admin
+    if not modules.User.isadmin(userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    
+    #Create the product
+    update_status = modules.Products.create_product(productname, stock, price)["Status"]
+    if not update_status:
+        return {"Error": "Failed to create product"}, 400
+    
+    #Log this event
+    log = modules.Audit.record_log(userid, f"Product {productname} created")
+    
+    return {"Message": "Successfully create product"}, 200
+
+
+
+#Update Product
+@app.route("/update_product", methods=["POST"])
+@jwt_required
+def update_product():
+    
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    productid = data["Productid"]
+    productname = data["Productname"]
+    stock = data["Stock"]
+    price = data["Price"]
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Check if user is an admin
+    if not modules.User.isadmin(userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    
+    #Update the product
+    update_status = modules.Products.update_product(productid, productname, stock, price)["Status"]
+    if not update_status:
+        return {"Error": "Failed to update product"}, 400
+    
+    #Log this event
+    log = modules.Audit.record_log(userid, f"Product {productid} of updated")
+    
+    
+    return {"Message": "Successfully updated product"}, 200
+    
+    
+
+#Delete Product
+@app.route("/delete_product", methods=["POST"])
+@jwt_required
+def delete_product():
+    
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    productid = data["Productid"]
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Check if user is an admin
+    if not modules.User.isadmin(userid):
+        return {"Error": "Access Forbidden"}, 401
+    
+    #Delete the product
+    delete_status = modules.Products.delete_product(productid)["Status"]
+    if not delete_status:
+        return {"Error": "Failed to delete product"}, 400
+    
+    #Log this event
+    log = modules.Audit.record_log(userid, f"Product {productid} deleted")
+    
+    return {"Message": "Delete success"}, 200
+    
 
 #----------------------------------------------------------------------------------------------------------------
 
@@ -286,7 +457,7 @@ def request_product():
 
 
 #Admin approve/reject product request
-@app.route("/update_product_request")
+@app.route("/update_product_request", methods=["POST"])
 @jwt_required
 def update_product_request():
     #Retrieve data
@@ -371,7 +542,7 @@ def update_product_request():
 
 #Preorder System
 
-@app.route("/view_preorders")
+@app.route("/view_preorders", methods=["POST"])
 @jwt_required
 def view_preorders():
     #Get user id
@@ -440,7 +611,7 @@ def preorder():
 
 
 #Admin approve/reject preorder
-@app.route("/update_preorder")
+@app.route("/update_preorder", methods=["POST"])
 @jwt_required
 def update_preorder():
     #Retrieve data
