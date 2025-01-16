@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight } from 'lucide-react'; // Updated imports
+import { Mail, Lock, User, ArrowRight } from 'lucide-react'; 
 import Image from 'next/image';
 import { Container, Typography, Button, TextField, Select, MenuItem, InputLabel, FormControl, Box, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
-const API_BASE_URL = 'http://your-backend-url'; // Replace this with your backend API URL
+const API_BASE_URL = 'https://127.0.0.1:5000'; 
 
 const LoginSignupPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,7 +15,7 @@ const LoginSignupPage = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [userType, setUserType] = useState(''); // To handle the user type (resident or admin)
+  const [userType, setUserType] = useState('');
   const [error, setError] = useState('');
 
   const toggleMode = () => setIsLogin(!isLogin);
@@ -25,8 +25,13 @@ const LoginSignupPage = () => {
   };
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      return;
+    }
+
     const loginData = {
-      username: name,
+      email,
       password,
     };
 
@@ -36,13 +41,11 @@ const LoginSignupPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginData),
       });
-      
+
       const result = await response.json();
-      if (response.ok) {
-        // Handle successful login (e.g., save the access token, redirect)
+      if (response.ok) { 
         console.log(result);
       } else {
-        // Show error message if login fails
         setError(result.Error || 'Login failed');
       }
     } catch (error) {
@@ -52,11 +55,16 @@ const LoginSignupPage = () => {
   };
 
   const handleRegister = async () => {
+    if (!name || !email || !password || !userType) {
+      setError('Please fill in all fields.');
+      return;
+    }
+
     const registerData = {
-      username: name,
+      name,
+      email,
       password,
-      mobile: '1234567890', // You can replace this with actual mobile input if needed
-      isadmin: userType === 'admin' ? 1 : 0,
+      userType, // resident or admin
     };
 
     try {
@@ -68,10 +76,8 @@ const LoginSignupPage = () => {
 
       const result = await response.json();
       if (response.ok) {
-        // Handle successful registration (e.g., show a success message, reset form)
         console.log(result);
       } else {
-        // Show error message if registration fails
         setError(result.Error || 'Registration failed');
       }
     } catch (error) {
@@ -92,7 +98,7 @@ const LoginSignupPage = () => {
         {/* Header with Logo and Welcome Message */}
         <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
           <Image
-            src="/images/mwh_logo.png" // Ensure this image path is correct and the image is in the /public/images folder
+            src="/images/mwh_logo.png"
             alt="Muhammadiyah Welfare Home Logo"
             width={150}
             height={150}
@@ -108,28 +114,44 @@ const LoginSignupPage = () => {
         {/* Login or Create Account Box */}
         <Box sx={{ marginTop: 4 }} display="flex" flexDirection="column" alignItems="center">
           {/* Select User Type */}
-          <FormControl fullWidth sx={{ maxWidth: 400, mb: 2 }}>
-            <InputLabel>Select User Type</InputLabel>
-            <Select
-              value={userType}
-              onChange={(e) => setUserType(e.target.value)}
-              label="Select User Type"
-            >
-              <MenuItem value="resident">Resident</MenuItem>
-              <MenuItem value="admin">Admin</MenuItem>
-            </Select>
-          </FormControl>
+          {!isLogin && (
+            <FormControl fullWidth sx={{ maxWidth: 400, mb: 2 }}>
+              <InputLabel>Select User Type</InputLabel>
+              <Select
+                value={userType}
+                onChange={(e) => setUserType(e.target.value)}
+                label="Select User Type"
+              >
+                <MenuItem value="resident">Resident</MenuItem>
+                <MenuItem value="admin">Admin</MenuItem>
+              </Select>
+            </FormControl>
+          )}
 
           {/* Username Field */}
           <TextField
             fullWidth
-            label="Enter Username"
+            label="Enter Name"
             variant="outlined"
             margin="normal"
             sx={{ maxWidth: 400 }}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            disabled={isLogin} 
           />
+
+          {/* Email Field */}
+          {!isLogin && (
+            <TextField
+              fullWidth
+              label="Enter Email"
+              variant="outlined"
+              margin="normal"
+              sx={{ maxWidth: 400 }}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          )}
 
           {/* Password Field with Hide/Show Feature */}
           <TextField

@@ -1,14 +1,22 @@
 Residents
-    SMS password rest: https://www.sendsmsnow.com/
-    View voucher balance (how much money)
-    view transaction history
-    view available products
-    request items
-    preorder system
+    SMS password rest: (email to sms [only m1 got gateway], twilio)
+    [done] View voucher balance (how much many vouchers, something like cdc system where it is all whole number)
+    [done] view transaction history
+    [done] view available products 
+    [done] request items 
+    [done] preorder system
+    [done] pay wth voucher (product request)
+    [done] pay wth voucher (preorder system)
+    Prevent user from seeing stuff of others.
+    
 
 Admin
-    User management (Add, suspend and change password)
+    User management ([done] Add, suspend and change password)
     Approve/reject tasks
-    Product request with tracking
+    [done] Product request with tracking
     view and update of audit logs
     generate pdf reports (pdfkit/rerportlab) for all weekly request and inventory summary
+
+
+Do i want to put isadmin in register? or make new api
+Need to make secure to prevent IDOR

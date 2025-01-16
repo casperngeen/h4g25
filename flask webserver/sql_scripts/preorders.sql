@@ -1,5 +1,5 @@
-CREATE TABLE "Product_Requests" (
-    "Requestid"     INTEGER NOT NULL UNIQUE,
+CREATE TABLE "Preorders" (
+    "Preorderid"     INTEGER NOT NULL UNIQUE,
     "Userid"        INTEGER NOT NULL,
     "Productid"     INTEGER NOT NULL,
     "Quantity"      INTEGER NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE "Product_Requests" (
     "Vouchers"      TEXT NOT NULL,
     "Status"        TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
     "Created"       DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY("Requestid" AUTOINCREMENT),
+    PRIMARY KEY("Preorderid" AUTOINCREMENT),
     CONSTRAINT "user"
         FOREIGN KEY ("Userid") 
         REFERENCES "User"("Userid")

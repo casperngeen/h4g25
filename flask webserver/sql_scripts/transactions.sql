@@ -3,6 +3,7 @@ CREATE TABLE "Transactions" (
 	"Userid"	    INTEGER NOT NULL,
     "Description"   TEXT,
     "Amount"        REAL NOT NULL,
+    "Vouchers"      TEXT NOT NULL,
     "Created"       DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY("Transactionid" AUTOINCREMENT),
     CONSTRAINT "user"
