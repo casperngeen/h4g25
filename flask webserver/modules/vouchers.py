@@ -78,3 +78,31 @@ class Vouchers:
         conn.close()
         
         return {"Vouchers":vouchers}
+    
+    
+    def add_voucher(userid: str, description: str, amount: float) -> dict:
+        """
+        Function to add a voucher directly to the Vouchers table.
+
+        Args:
+            userid (str): Unique identifier of the user.
+            description (str): Description of the voucher.
+            amount (float): Amount for the voucher.
+
+        Returns:
+            dict: Status of the action.
+        """
+        # Open connection to database
+        conn = sqlite3.connect("../sqlite_db")
+
+        try:
+            conn.execute(
+                "INSERT INTO Vouchers (Userid, Description, Amount) VALUES (?, ?, ?)",
+                (userid, description, amount),
+            )
+            conn.commit()
+            conn.close()
+            return {"Status": True, "Message": f"Voucher for {userid} added successfully."}
+        except Exception as e:
+            conn.close()
+            return {"Status": False, "Message": f"Failed to add voucher: {str(e)}"}

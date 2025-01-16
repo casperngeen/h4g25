@@ -7,14 +7,14 @@ Residents
     [done] preorder system
     [done] pay wth voucher (product request)
     [done] pay wth voucher (preorder system)
-    Prevent user from seeing stuff of others.
+
     
 
 Admin
     User management ([done] Add, suspend and change password)
-    Approve/reject tasks
+    [done] Approve/reject tasks
     [done] Product request with tracking
-    view and update of audit logs
+    [done] view and update of audit logs
     generate pdf reports (pdfkit/rerportlab) for all weekly request and inventory summary
 
 

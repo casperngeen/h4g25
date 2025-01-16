@@ -5,7 +5,6 @@ CREATE TABLE "Voucher_Tasks" (
     "Amount" REAL NOT NULL,
     "Status" TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
     "Created" DATETIME DEFAULT CURRENT_TIMESTAMP,
-    "Adminid" INTEGER,
     PRIMARY KEY("Taskid" AUTOINCREMENT),
     CONSTRAINT "user"
         FOREIGN KEY ("Userid") 
