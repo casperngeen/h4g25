@@ -2,6 +2,7 @@
 
 #imports
 import sqlite3
+import modules
 
 class User:
     
@@ -272,8 +273,64 @@ class User:
         
 
         Args:
-            userid (str): _description_
+            userid (str): User identifier
 
         Returns:
-            dict: _description_
+            dict: Status
         """
+        
+        #Get Conenction
+        conn = sqlite3.connect("../sqlite_db.db")
+        
+        #Get Phone Number
+        phone_number = conn.execute("SELECT Mobile FROM User WHERE Userid = ?", (userid,))["Mobile"]
+        
+        
+        try:
+            otp = modules.OTP.generate_otp()
+            
+            #Save the otp
+            conn.execute(
+                "INSERT INTO Otps (Userid, Otp) VALUES (?, ?)",
+                (userid, otp)
+            )
+            conn.commit()
+            
+            modules.OTP.send_sms_otp(phone_number, otp)
+            
+        except:
+            conn.close()
+            return {"Status": False, "Message": "OTP Failed to send"}
+        
+        
+        conn.close()
+        return {"Status": True, "Message": "OTP sent"}
+    
+    
+    def validate_otp(userid:str, otp:str) -> bool:
+        """
+        Function to valid otp for password reset
+
+        Args:
+            userid (str): user identifier
+            otp (str): user input otp
+
+        Returns:
+            bool: If OTP is valid 
+        """
+        #Get Conenction
+        conn = sqlite3.connect("../sqlite_db.db")
+        
+        #Get the user otp
+        valid_otp = conn.execute("SELECT * FROM Otps WHERE Userid = ?", (userid,))
+        
+        if valid_otp != otp:
+            conn.close()
+            return False
+        
+        #Delete otp entry since it is now valid
+        conn.execute("DELETE FROM Otps WHERE Userid = ?", (userid,))
+        conn.commit()
+        conn.close()
+        
+        return True

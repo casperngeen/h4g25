@@ -6,12 +6,8 @@ CREATE TABLE "Voucher_Tasks" (
     "Status" TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
     "Created" DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY("Taskid" AUTOINCREMENT),
-    CONSTRAINT "user"
+    CONSTRAINT "User"
         FOREIGN KEY ("Userid") 
-        REFERENCES "User"("Userid")
-        ON DELETE CASCADE,
-    CONSTRAINT "admin"
-        FOREIGN KEY ("Adminid") 
-        REFERENCES "User" ("Userid") 
-        ON DELETE SET NULL
+        REFERENCES "User" ("Userid")
+        ON DELETE CASCADE
 );

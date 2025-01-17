@@ -48,7 +48,7 @@ def register():
     admin_id = data.get('Adminid') #Id of the admin performing this action
 
     if not username or not password or not is_admin:
-        return {'error': 'Username, password or isadmin is required'}, 400
+        return {'Error': 'Username, password or isadmin is required'}, 400
 
     #Confirm that user performing action is an admin
     if not modules.User.isadmin(admin_id):
@@ -160,13 +160,14 @@ def validate_reset():
     if not exists:
         return {"Error": "User does not exist"}, 400
     
-    #Check OTP
-    otp_valid = modules.User.validate_otp(username, otp)
-    if not otp_valid:
-        return {"Error": "Invalid OTP"}, 400
-    
     #Get userid
     userid = modules.User.get_userid(username)["Userid"]
+    
+    #Check OTP
+    otp_valid = modules.User.validate_otp(userid, otp)
+    if not otp_valid:
+        return {"Error": "Invalid OTP"}, 401
+    
     
     #Reset the password
     reset_password_status = modules.User.reset_password(userid, new_password)["Status"]
@@ -330,7 +331,7 @@ def transaction_history():
 
 
 
-@app.route("get_voucher_tasks", methods=["POST"])
+@app.route("/get_voucher_tasks", methods=["POST"])
 @jwt_required
 def get_voucher_tasks():
     #Get Data
@@ -559,7 +560,7 @@ def view_product_requests():
        
     
     #Returns all product requests with fields: Requestid, Userid, Username, Productid, Productname, Quantity, Status, Created
-    return {"Product_Requests": product_requests}
+    return {"Product_Requests": product_requests}, 200
 
 
 
