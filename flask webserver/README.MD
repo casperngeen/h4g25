@@ -37,7 +37,7 @@ User Management APIs
 
     OUTPUT -> 'Message' (200) / 'Error' (400/401)
 
- 6. /suspend (POST) (Require JWT)       [Suspends a user]
+ 6. /suspend_user_account (POST) (Require JWT)       [Suspends a user]
     INPUT -> {'Username':str, 'Adminid':str}
         Username - username
         Adminid -> Userid of admin performing this action
