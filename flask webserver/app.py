@@ -45,10 +45,15 @@ def register():
     mobile = data.get('mobile')
     is_admin = int(data.get('isadmin')) #1 for admin, 0 for normal user
     status = 1 #1 for active, 0 for suspended
+    admin_id = data.get('Adminid') #Id of the admin performing this action
 
     if not username or not password or not is_admin:
-        return {'error': 'Username, password or isadmin is required'}, 400
+        return {'Error': 'Username, password or isadmin is required'}, 400
 
+    #Confirm that user performing action is an admin
+    if not modules.User.isadmin(admin_id):
+        return {"Error": "Access Forbidden"}, 401
+    
     
     #Check if user exists
     existing_user = modules.User.user_exists(username)
@@ -114,6 +119,68 @@ def logout():
     return {'Message': 'Successfully logged out'}, 200
 
 
+#Reset Password
+@app.route("/reset_password", methods=["POST"])
+def reset_password():
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    
+    #Check that user exists
+    exists = modules.User.user_exists(username)
+    if not exists:
+        return {"Error": "User does not exist"}, 400
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    
+    #Trigger the otp to be sent
+    send_otp_status = modules.User.send_otp(userid)["Status"]
+    if not send_otp_status:
+        return {"Error": "OTP failed to send"}, 400
+    
+    #Log event
+    log = modules.Audit.record_log(userid, f"User {userid} requested OTP")
+   
+    
+    return {"Message": "OTP sent"}, 200
+
+
+#Reset password validated (otp)
+@app.route("/validate_reset", methods=["POST"])
+def validate_reset():
+    data = request.json
+    username = data["Username"]
+    new_password = data["New_Password"]
+    otp = data["OTP"]
+    
+    #Check that user exists
+    exists = modules.User.user_exists(username)
+    if not exists:
+        return {"Error": "User does not exist"}, 400
+    
+    #Get userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Check OTP
+    otp_valid = modules.User.validate_otp(userid, otp)
+    if not otp_valid:
+        return {"Error": "Invalid OTP"}, 401
+    
+    
+    #Reset the password
+    reset_password_status = modules.User.reset_password(userid, new_password)["Status"]
+    if not reset_password_status:
+        return {"Error": "Failed to reset password"}, 400
+    
+    #Log event
+    log = modules.Audit.record_log(userid, f"User {userid} password reset")
+   
+    
+    return {"Message": "Password reset"}, 200
+
+
 #Suspend user
 @app.route("/suspend", methods=["POST"])
 @jwt_required
@@ -134,6 +201,10 @@ def suspend():
     suspend_status = modules.User.suspend_user(userid)["Status"]
     if not suspend_status:
         return {"Error": "Failed to suspend user"}, 400
+    
+    #Log event
+    log = modules.Audit.record_log(admin_id, f"User {userid} suspended")
+   
     
     return {"Message": "User suspended successfully"}, 200
 
@@ -159,6 +230,9 @@ def unsuspend():
     if not suspend_status:
         return {"Error": "Failed to unsuspend user"}, 400
     
+    #Log event
+    log = modules.Audit.record_log(admin_id, f"User {userid} unsuspended")
+    
     return {"Message": "User unsuspended successfully"}, 200
 
 
@@ -182,6 +256,9 @@ def delete_user():
     delete_status = modules.User.delete_user(userid)["Status"]
     if not delete_status:
         return {"Error": "Failed to delete user"}, 400
+    
+    #Log event
+    log = modules.Audit.record_log(admin_id, f"User {userid} suspended")
     
     return {"Message": "User successfuly deleted"}, 200
     
@@ -254,7 +331,7 @@ def transaction_history():
 
 
 
-@app.route("get_voucher_tasks", methods=["POST"])
+@app.route("/get_voucher_tasks", methods=["POST"])
 @jwt_required
 def get_voucher_tasks():
     #Get Data
@@ -483,7 +560,7 @@ def view_product_requests():
        
     
     #Returns all product requests with fields: Requestid, Userid, Username, Productid, Productname, Quantity, Status, Created
-    return {"Product_Requests": product_requests}
+    return {"Product_Requests": product_requests}, 200
 
 
 

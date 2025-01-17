@@ -1,3 +1,4 @@
 Flask==3.0.3
 Flask-JWT-Extended==4.7.1
 pdfkit==1.0.0
+twilio==9.4.3
