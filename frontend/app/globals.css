@@ -214,4 +214,76 @@ button {
   padding: 5px 0;
   border-bottom: 1px solid #ddd;
 }
+/* global.css */
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f7fc;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-dashboard {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-section, .inventory-section, .audit-section, .report-section {
+  margin-top: 30px;
+}
+
+.task-list, .inventory-list, .audit-log-list, .report-list {
+  list-style: none;
+  padding: 0;
+}
+
+.task-item, .inventory-item, .audit-log-item, .report-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #fff;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+button {
+  padding: 5px 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 3px;
+}
+
+.approve-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.reject-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.inventory-update-input {
+  width: 60px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.generate-report-btn {
+  background-color: #008CBA;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 

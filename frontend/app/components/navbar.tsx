@@ -1,4 +1,4 @@
-"use client";  
+"use client";
 
 import React, { useState } from "react";
 import { AccountCircle, ShoppingCart } from "@mui/icons-material";
@@ -8,7 +8,9 @@ import Image from "next/image";
 import { grey, blue } from "@mui/material/colors";
 
 const handleClickProfile = () => {};
+
 const handleLogout = () => {};
+
 const handleCheckout = () => {};
 
 export const NavBar = () => {
@@ -30,19 +32,8 @@ export const NavBar = () => {
       borderBottom="1px solid"
       borderColor={grey[200]}
     >
-      <Image
-        src="/images/logo.png"
-        alt="logo"
-        width="250"
-        height="80"
-      />
-      <Box
-        display="flex"
-        flexDirection="row"
-        justifyContent="flex-end"
-        gap="8px"
-        alignItems="center"
-      >
+      <Image src="/images/logo.png" alt="logo" width="250" height="80" />
+      <Box display="flex" flexDirection="row" justifyContent="flex-end" gap="8px" alignItems="center">
         <IconButton
           sx={{
             padding: 0,
@@ -71,11 +62,7 @@ export const NavBar = () => {
         >
           <AccountCircle sx={{ fontSize: "32px" }} />
         </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-        >
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
           <MuiMenuItem onClick={handleClickProfile}>Profile</MuiMenuItem>
           <MuiMenuItem onClick={handleLogout}>Log out</MuiMenuItem>
         </Menu>
@@ -84,8 +71,7 @@ export const NavBar = () => {
   );
 };
 
-const MenuItem = styled(MuiMenuItem)(
-  ({ theme }) => `
+const MenuItem = styled(MuiMenuItem)(({ theme }) => `
   list-style: none;
   padding: 8px;
   border-radius: 8px;
@@ -100,5 +86,5 @@ const MenuItem = styled(MuiMenuItem)(
     background-color: ${theme.palette.mode === "dark" ? grey[800] : grey[100]};
     color: ${theme.palette.mode === "dark" ? grey[300] : grey[900]};
   }
-`
-);
+`);
+
