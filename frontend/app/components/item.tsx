@@ -5,21 +5,19 @@ import { Box, Chip, IconButton } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
 import { blue } from "@mui/material/colors";
 
-interface ItemProps {
+export interface ItemProps {
     name: string;
     category: string;
-    quantity: number;
-    maxQuantity: number;
-    setQuantity: (value: number) => void;
+    initialQuantity: number;
 }
 
 export const Item: React.FC<ItemProps> = ({
     name,
     category,
-    maxQuantity,
-    quantity,
-    setQuantity,
+    initialQuantity,
 }) => {
+    const [quantity, setQuantity] = useState(initialQuantity);
+
     const handleAdd = () => {
         if (quantity > 0) {
             const newQuantity = quantity - 1;
@@ -31,7 +29,7 @@ export const Item: React.FC<ItemProps> = ({
                 setDisableAdd(false);
             }
 
-            if (newQuantity >= maxQuantity) {
+            if (newQuantity >= initialQuantity) {
                 setDisableRemove(true);
             } else {
                 setDisableRemove(false);
@@ -40,7 +38,7 @@ export const Item: React.FC<ItemProps> = ({
     };
 
     const handleRemove = () => {
-        if (quantity < maxQuantity) {
+        if (quantity < initialQuantity) {
             const newQuantity = quantity + 1;
             setQuantity(newQuantity);
 
@@ -50,7 +48,7 @@ export const Item: React.FC<ItemProps> = ({
                 setDisableAdd(false);
             }
 
-            if (newQuantity >= maxQuantity) {
+            if (newQuantity >= initialQuantity) {
                 setDisableRemove(true);
             } else {
                 setDisableRemove(false);
@@ -59,16 +57,19 @@ export const Item: React.FC<ItemProps> = ({
     };
 
     const [disableAdd, setDisableAdd] = useState(quantity <= 0);
-    const [disableRemove, setDisableRemove] = useState(quantity >= maxQuantity);
+    const [disableRemove, setDisableRemove] = useState(
+        quantity >= initialQuantity
+    );
 
     return (
         <Box
             display="flex"
-            padding={"8px"}
+            padding={"16px 20px"}
             flexDirection="column"
             justifyContent="space-between"
-            maxWidth={"200px"}
-            gap={"8px"}
+            minWidth={"200px"}
+            maxWidth={"300px"}
+            gap={"12px"}
             sx={{
                 backgroundColor: blue[50],
                 borderStyle: "hidden",
