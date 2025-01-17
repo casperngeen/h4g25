@@ -15,8 +15,9 @@ Admin
     [done] Approve/reject tasks
     [done] Product request with tracking
     [done] view and update of audit logs
-    generate pdf reports (pdfkit/rerportlab) for all weekly request and inventory summary
+    [done] generate pdf reports (pdfkit/rerportlab) for all weekly request and inventory summary
 
 
 Do i want to put isadmin in register? or make new api
 Need to make secure to prevent IDOR
+Run all scripts in the db

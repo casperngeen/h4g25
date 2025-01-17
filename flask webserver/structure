@@ -5,5 +5,5 @@
 [done] inventory management -> admin to be able to manually add/update/delete product
 user management -> admin to register, suspend, delete users + reset password, user can reset wth mobile
 [done] audit -> every action should have a audit log added
-pdf reports -> select requests by week / all inventory
+[done] pdf reports -> select requests by week / all inventory
 
