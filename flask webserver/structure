@@ -1,0 +1,9 @@
+[done] voucher system -> like cdc voucher, no refund
+[done] voucher tasks -> user create, admin approve/reject, add to voucher table wth userid
+[done] product requests -> user request, admin approve/reject, update inventory, update transaction, delete used voucher
+[done] product preorder -> user request, admin approve/reject, update transaction, delete used voucher
+[done] inventory management -> admin to be able to manually add/update/delete product
+user management -> admin to register, suspend, delete users + reset password, user can reset wth mobile
+[done] audit -> every action should have a audit log added
+[done] pdf reports -> select requests by week / all inventory
+
