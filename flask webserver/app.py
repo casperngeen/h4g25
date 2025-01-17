@@ -182,9 +182,9 @@ def validate_reset():
 
 
 #Suspend user
-@app.route("/suspend", methods=["POST"])
-@jwt_required
-def suspend():
+@app.route("/suspend_user", methods=["POST"])
+@jwt_required()
+def suspend_user():
     #Retrieve data
     data = request.json
     username = data["Username"]
@@ -211,7 +211,7 @@ def suspend():
 
 #Unsuspend user
 @app.route("/unsuspend", methods=["POST"])
-@jwt_required
+@jwt_required()
 def unsuspend():
     #Retrieve data
     data = request.json
@@ -238,7 +238,7 @@ def unsuspend():
 
 #Delete User
 @app.route("/delete_user", methods=["POST"])
-@jwt_required
+@jwt_required()
 def delete_user():
     #Retrieve data
     data = request.json
@@ -291,7 +291,7 @@ def view_vouchers():
 
 #View transactions (Need for security)
 @app.route("/transaction_history", methods=["POST"])
-@jwt_required
+@jwt_required()
 def transaction_history():
     #Retrieve username from POST request
     data = request.json
@@ -332,7 +332,7 @@ def transaction_history():
 
 
 @app.route("/get_voucher_tasks", methods=["POST"])
-@jwt_required
+@jwt_required()
 def get_voucher_tasks():
     #Get Data
     data = request.json
@@ -355,7 +355,7 @@ def get_voucher_tasks():
 
 
 @app.route("/create_voucher_task", methods=["POST"])
-@jwt_required
+@jwt_required()
 def create_voucher_task():
     #Get Data
     data = request.json
@@ -380,7 +380,7 @@ def create_voucher_task():
 
 
 @app.route("/update_voucher_task", methods=["POST"])
-@jwt_required
+@jwt_required()
 def update_voucher_task():
     #Get Data
     data = request.json
@@ -415,7 +415,7 @@ def update_voucher_task():
 
 #View all products
 @app.route("/view_products", methods=["GET"])
-@jwt_required
+@jwt_required()
 def view_products():
     
     #Get all products
@@ -429,7 +429,7 @@ def view_products():
 
 #Create Product
 @app.route("/create_product", methods=["POST"])
-@jwt_required
+@jwt_required()
 def create_product():
     
     #Retrieve data
@@ -461,7 +461,7 @@ def create_product():
 
 #Update Product
 @app.route("/update_product", methods=["POST"])
-@jwt_required
+@jwt_required()
 def update_product():
     
     #Retrieve data
@@ -495,7 +495,7 @@ def update_product():
 
 #Delete Product
 @app.route("/delete_product", methods=["POST"])
-@jwt_required
+@jwt_required()
 def delete_product():
     
     #Retrieve data
@@ -527,7 +527,7 @@ def delete_product():
 
 #Admin view all product requests
 @app.route("/view_product_requests", methods=["POST"])
-@jwt_required
+@jwt_required()
 def view_product_requests():
     #Get user id
     data = request.json
@@ -566,7 +566,7 @@ def view_product_requests():
 
 #Request product
 @app.route("/request_product", methods=["POST"])
-@jwt_required
+@jwt_required()
 def request_product():
     #Retrieve data
     data = request.json
@@ -606,7 +606,7 @@ def request_product():
 
 #Admin approve/reject product request
 @app.route("/update_product_request", methods=["POST"])
-@jwt_required
+@jwt_required()
 def update_product_request():
     #Retrieve data
     data = request.json
@@ -691,7 +691,7 @@ def update_product_request():
 #Preorder System
 
 @app.route("/view_preorders", methods=["POST"])
-@jwt_required
+@jwt_required()
 def view_preorders():
     #Get user id
     data = request.json
@@ -732,7 +732,7 @@ def view_preorders():
 
 #Preorder
 @app.route("/preorder", methods=["POST"])
-@jwt_required
+@jwt_required()
 def preorder():
     #Retrieve data
     data = request.json
@@ -760,7 +760,7 @@ def preorder():
 
 #Admin approve/reject preorder
 @app.route("/update_preorder", methods=["POST"])
-@jwt_required
+@jwt_required()
 def update_preorder():
     #Retrieve data
     data = request.json
@@ -840,7 +840,7 @@ def update_preorder():
 #----------------------------------------------------------------------------------------------------------------
 #Generate reports
 @app.route("/generate_request_report", methods=["POST"])
-@jwt_required
+@jwt_required()
 def generate_request_report():
     #Retrieve data
     data = request.json
@@ -871,7 +871,7 @@ def generate_request_report():
 
 
 @app.route("/generate_inventory_report", methods=["POST"])
-@jwt_required
+@jwt_required()
 def generate_inventory_report():
     #Retrieve data
     data = request.json
@@ -906,7 +906,7 @@ if __name__ == '__main__':
     #app.debug = False
     
     #for normal local testing use this run
-    app.run(ssl_context="adhoc",host='127.0.0.1', port=port, debug=True)
+    app.run(host='127.0.0.1', port=port, debug=True)
     
     #For Deployment
     #app.run(host='0.0.0.0', port=port, debug=True)
