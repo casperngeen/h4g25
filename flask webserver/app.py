@@ -85,7 +85,7 @@ def login():
     #Validate User
     if user and user['password'] == password:
         #Check if account is active
-        if user['status'] == 1:
+        if not modules.User.issuspended(userid):
             access_token = create_access_token(identity=username)
             
             #Log event
@@ -114,6 +114,77 @@ def logout():
     return {'Message': 'Successfully logged out'}, 200
 
 
+#Suspend user
+@app.route("/suspend", methods=["POST"])
+@jwt_required
+def suspend():
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    admin_id = data["Adminid"]
+    
+    #Confirm that user performing action is an admin
+    if not modules.User.isadmin(admin_id):
+        return {"Error": "Access Forbidden"}, 401
+    
+    #Get the user's userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Suspend the user
+    suspend_status = modules.User.suspend_user(userid)["Status"]
+    if not suspend_status:
+        return {"Error": "Failed to suspend user"}, 400
+    
+    return {"Message": "User suspended successfully"}, 200
+
+
+#Unsuspend user
+@app.route("/unsuspend", methods=["POST"])
+@jwt_required
+def unsuspend():
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    admin_id = data["Adminid"]
+    
+    #Confirm that user performing action is an admin
+    if not modules.User.isadmin(admin_id):
+        return {"Error": "Access Forbidden"}, 401
+    
+    #Get the user's userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #unsuspend the user
+    suspend_status = modules.User.unsuspend_user(userid)["Status"]
+    if not suspend_status:
+        return {"Error": "Failed to unsuspend user"}, 400
+    
+    return {"Message": "User unsuspended successfully"}, 200
+
+
+#Delete User
+@app.route("/delete_user", methods=["POST"])
+@jwt_required
+def delete_user():
+    #Retrieve data
+    data = request.json
+    username = data["Username"]
+    admin_id = data["Adminid"]
+    
+    #Confirm that user performing action is an admin
+    if not modules.User.isadmin(admin_id):
+        return {"Error": "Access Forbidden"}, 401
+    
+    #Get the user's userid
+    userid = modules.User.get_userid(username)["Userid"]
+    
+    #Delete the user
+    delete_status = modules.User.delete_user(userid)["Status"]
+    if not delete_status:
+        return {"Error": "Failed to delete user"}, 400
+    
+    return {"Message": "User successfuly deleted"}, 200
+    
 #--------------------------------------------------------------------------------------------------------------------------
 
 #Voucher system 

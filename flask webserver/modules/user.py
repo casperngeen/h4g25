@@ -130,3 +130,108 @@ class User:
             return {"Status": False, "Message": "Failed to register user"}
         
         return {"Status":True, "Message": f"Successfully created user {username}"}
+    
+    
+    def delete_user(userid:str) -> dict:
+        """
+        Function to delete a user
+
+        Args:
+            userid (str): Unique identifier of the user
+
+        Returns:
+            dict: deletion status
+        """
+        #Get connection
+        conn = sqlite3.connect("../sqlite_db.db")
+
+        #Delete the user
+        try:
+            conn.execute("DELETE FROM User WHERE Userid = ?", (userid,))
+            conn.commit()
+            conn.close()
+        
+        except:
+            conn.close()
+            return {"Status": False, "Message": "Failed to delete user"}
+
+        return {"Status": True, "Message": "User successfully deleted"}
+    
+    
+    
+    def issuspended(userid:str) -> bool:
+        """
+        Function that checks if a user is suspended
+
+        Args:
+            userid (str): Userid of the user to check
+
+        Returns:
+            bool: Status of the user
+        """
+        
+        #Get connection
+        conn = sqlite3.connect("../sqlite_db.db")
+        
+        #Get Status (1 for active, 0 for suspended)
+        status = conn.execute("SELECT Status FROM User WHERE Userid = ?", (userid,))["Status"]
+        conn.close()
+        
+        if status:
+            return False
+        
+        return True
+    
+    
+    
+    def suspend_user(userid:str) -> dict:
+        """
+        Function to suspend a user
+
+        Args:
+            userid (str): Identifier of the user to suspend
+
+        Returns:
+            dict: Status of the suspension
+        """
+        #Get connection
+        conn = sqlite3.connect("../sqlite_db.db")
+        
+        #Suspend the user
+        try:
+            conn.execute("UPDATE User SET Status = 0 WHERE Userid = ?", (userid,))
+            conn.commit()
+            conn.close()
+        
+        except:
+            conn.close()
+            return {"Status": False, "Message": "Failed to suspend user"}
+    
+        return {"Status": True, "Message": "User suspended"}
+    
+    
+    def unsuspend_user(userid:str) -> dict:
+        """
+        Function to unsuspend a user
+
+        Args:
+            userid (str): Unique Identifier
+
+        Returns:
+            dict: Unsuspension status
+        """
+        #Get connection
+        conn = sqlite3.connect("../sqlite_db.db")
+        
+        #Suspend the user
+        try:
+            conn.execute("UPDATE User SET Status = 1 WHERE Userid = ?", (userid,))
+            conn.commit()
+            conn.close()
+        
+        except:
+            conn.close()
+            return {"Status": False, "Message": "Failed to unsuspend user"}
+    
+        return {"Status": True, "Message": "User unsuspended"}
+    
