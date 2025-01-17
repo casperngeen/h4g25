@@ -235,3 +235,45 @@ class User:
     
         return {"Status": True, "Message": "User unsuspended"}
     
+    
+    def reset_password(userid:str, new_password:str) -> dict:
+        """
+        Function to reset password for a user
+
+        Args:
+            userid (str): User unique identifier
+            new_password (str): New password
+
+        Returns:
+            dict: Password reset status
+        """
+        
+        #Get Conenction
+        conn = sqlite3.connect("../sqlite_db.db")
+        
+        #Reset password
+        try:
+            conn.execute(
+                "UPDATE User SET Password = ? WHERE Userid = ?",
+                (new_password, userid)
+            )
+            conn.commit()
+            conn.close()
+            
+        except:
+            conn.close()
+            return {"Status": False, "Message": "Password failed to reset"}
+        
+        return {"Status": True, "Message": "Password reset"}
+    
+    
+    def send_otp(userid:str) -> dict:
+        """
+        
+
+        Args:
+            userid (str): _description_
+
+        Returns:
+            dict: _description_
+        """
